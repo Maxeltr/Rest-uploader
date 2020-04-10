@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ru.maxeltr.RstPldr;
+package ru.maxeltr.rstpldr;
 
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
@@ -11,6 +11,9 @@ package ru.maxeltr.RstPldr;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  *
@@ -24,6 +27,10 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
+        applicationContext.getBean("main");
+
+
         try {
 
             logger.info("start");
