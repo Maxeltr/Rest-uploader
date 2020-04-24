@@ -23,11 +23,14 @@
  */
 package ru.maxeltr.rstpldr.Config;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.LogManager;
 import javax.crypto.NoSuchPaddingException;
+import org.kohsuke.args4j.Option;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.maxeltr.rstpldr.Service.Crypter;
+import ru.maxeltr.rstpldr.Service.CryptService;
 
 /**
  *
@@ -38,8 +41,24 @@ public class AppConfig {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
     public static final String CONFIG_PATHNAME = "Configuration.xml";
+    public static final byte[] SALT = {1, 2, 3, 4, 5, 6, 7, 8};
+    public static final int ITERATION_COUNT = 4000;
+    public static final int KEY_LENGTH = 128;
     public static final String URL = "http://176.113.82.112/v1/api/file";
     public static final String URL_GET_TOKEN = "http://176.113.82.112/oauth";
+
+    @Option(name = "-pin", usage = "enter pin to decrypt options")
+    public static String pin = "";
+
+    public AppConfig() {
+        try {
+            LogManager.getLogManager().readConfiguration(
+                    AppConfig.class.getResourceAsStream("/logging.properties")
+            );
+        } catch (IOException | SecurityException ex) {
+            System.err.println("Could not setup logger configuration: " + ex.toString());
+        }
+    }
 
     @Bean
     public Config config() {
@@ -47,7 +66,14 @@ public class AppConfig {
     }
 
     @Bean
-    public Crypter crypter(char[] pin) throws NoSuchAlgorithmException, NoSuchPaddingException {
-        return new Crypter(pin);
+    public CryptService cryptService(char[] pin) throws NoSuchAlgorithmException, NoSuchPaddingException {
+        return new CryptService();
     }
+
+    @Bean
+    public CmdLnParser cmdLnParser() {
+        return new CmdLnParser(this);
+    }
+
+
 }

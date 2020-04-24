@@ -30,8 +30,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -39,7 +39,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class Config {
 
-    private static final Logger logger = LogManager.getLogger(Config.class);
+    private static final Logger logger = Logger.getLogger(Config.class.getName());
     private final Properties properties = new Properties();
     private final Path path;
 
@@ -65,7 +65,7 @@ public class Config {
         try (FileInputStream in = new FileInputStream(configFile);) {
             this.properties.loadFromXML(in);
         } catch (IOException ex) {
-            logger.error(String.format("Cannot read configuration from file: %s.%n", this.path), ex);
+            logger.log(Level.SEVERE, String.format("Cannot read configuration from file: %s.%n", this.path), ex);
         }
     }
 
@@ -74,7 +74,7 @@ public class Config {
         try (FileOutputStream out = new FileOutputStream(configFile);) {
             this.properties.storeToXML(out, "Configuration");
         } catch (IOException ex) {
-            logger.error(String.format("Cannot save configuration to file: %s.%n", this.path), ex);
+            logger.log(Level.SEVERE, String.format("Cannot save configuration to file: %s.%n", this.path), ex);
         }
     }
 }

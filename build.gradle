@@ -18,8 +18,9 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.1'
+    compile group: 'args4j', name: 'args4j', version: '2.32'
+//    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.1'
+//    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.1'
 //    testImplementation     'junit:junit:4.13'
 }
 

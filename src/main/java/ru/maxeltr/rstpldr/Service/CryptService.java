@@ -27,6 +27,8 @@ import java.security.AlgorithmParameters;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -34,8 +36,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.maxeltr.rstpldr.Config.AppConfig;
+
 
 /**
  *
@@ -43,16 +45,12 @@ import org.apache.logging.log4j.Logger;
  */
 public class CryptService {
 
-    public static final byte[] SALT = {1, 2, 3, 4, 5, 6, 7, 8};
-    public static final int ITERATION_COUNT = 4000;
-    public static final int KEY_LENGTH = 128;
-    private final char[] pin;
+    private char[] pin;
     private final Cipher pbeCipher;
 
-    private static final Logger logger = LogManager.getLogger(CryptService.class);
+    private static final Logger logger = Logger.getLogger(CryptService.class.getName());
 
-    public CryptService(char[] pin) throws NoSuchAlgorithmException, NoSuchPaddingException {
-        this.pin = pin;
+    public CryptService() throws NoSuchAlgorithmException, NoSuchPaddingException {
         this.pbeCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     }
 
@@ -79,7 +77,7 @@ public class CryptService {
         String encryptedValue;
         byte[] cryptoText, iv;
         try {
-            SecretKeySpec key = createSecretKey(secretKey, CryptService.SALT, CryptService.ITERATION_COUNT, CryptService.KEY_LENGTH);
+            SecretKeySpec key = createSecretKey(secretKey, AppConfig.SALT, AppConfig.ITERATION_COUNT, AppConfig.KEY_LENGTH);
             this.pbeCipher.init(Cipher.ENCRYPT_MODE, key);
             AlgorithmParameters parameters = this.pbeCipher.getParameters();
             IvParameterSpec ivParameterSpec = parameters.getParameterSpec(IvParameterSpec.class);
@@ -87,7 +85,7 @@ public class CryptService {
             iv = ivParameterSpec.getIV();
             encryptedValue = base64Encode(iv) + ":" + base64Encode(cryptoText);
         } catch (Exception ex) {
-            logger.error(String.format("Cannot encipher data.%n"), ex);
+            logger.log(Level.SEVERE, String.format("Cannot encipher data.%n"), ex);
 
             return "";
         }
@@ -112,16 +110,20 @@ public class CryptService {
 
         String iv, cryptoText;
         try {
-            SecretKeySpec key = createSecretKey(secretKey, CryptService.SALT, CryptService.ITERATION_COUNT, CryptService.KEY_LENGTH);
+            SecretKeySpec key = createSecretKey(secretKey, AppConfig.SALT, AppConfig.ITERATION_COUNT, AppConfig.KEY_LENGTH);
             iv = value.split(":")[0];
             cryptoText = value.split(":")[1];
             this.pbeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(base64Decode(iv)));
             decryptedValue = this.pbeCipher.doFinal(base64Decode(cryptoText));
         } catch (Exception ex) {
-            logger.error(String.format("Cannot decipher data.%n"), ex);
+            logger.log(Level.SEVERE, String.format("Cannot decipher data.%n"), ex);
         }
 
         return decryptedValue;
+    }
+
+    private void setPin(char[] pin) {
+        this.pin = pin;
     }
 
     private char[] getPin() {
