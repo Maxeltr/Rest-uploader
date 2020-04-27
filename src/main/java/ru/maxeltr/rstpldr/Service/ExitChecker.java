@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -66,7 +68,19 @@ public class ExitChecker {
         // Run it async, otherwise the caller thread will be blocked
         CompletableFuture.runAsync(() -> {
             try {
-                watcher.take();
+                WatchKey key = watcher.take();
+                while (key != null) {
+                    for (WatchEvent<?> event : key.pollEvents()) {
+                        if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                            String filename = event.context().toString();
+                            if (filename.startsWith("exit")) {
+                                return;
+                            }
+                        }
+                    }
+                    key.reset();
+                }
+
             } catch (InterruptedException e) {
                 // Ok, we got interrupted
             }
