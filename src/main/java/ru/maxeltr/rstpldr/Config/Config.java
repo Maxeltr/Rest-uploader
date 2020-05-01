@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.args4j.Option;
 
 /**
  *
@@ -39,7 +40,12 @@ import java.util.logging.Logger;
  */
 public class Config {
 
+    public static final byte[] SALT = {1, 2, 3, 4, 5, 6, 7, 8};
+    public static final int ITERATION_COUNT = 4000;
+    public static final int KEY_LENGTH = 128;
+
     private static final Logger logger = Logger.getLogger(Config.class.getName());
+
     private final Properties properties = new Properties();
     private final Path path;
 
@@ -54,13 +60,12 @@ public class Config {
 
     public void setProperty(String property, String value) {
         this.properties.setProperty(property, value);
-        this.saveConfigToFile();
     }
 
 //    public Properties setProperties(Properties properties) {
 //        //TODO
 //    }
-    private void readConfigFromFile() {
+    public void readConfigFromFile() {
         File configFile = new File(this.path.toString());
         try (FileInputStream in = new FileInputStream(configFile);) {
             this.properties.loadFromXML(in);
@@ -69,7 +74,7 @@ public class Config {
         }
     }
 
-    private void saveConfigToFile() {
+    public void saveConfigToFile() {
         File configFile = new File(this.path.toString());
         try (FileOutputStream out = new FileOutputStream(configFile);) {
             this.properties.storeToXML(out, "Configuration");

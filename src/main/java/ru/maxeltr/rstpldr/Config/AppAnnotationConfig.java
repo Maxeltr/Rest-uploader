@@ -23,7 +23,10 @@
  */
 package ru.maxeltr.rstpldr.Config;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.LogManager;
 import javax.crypto.NoSuchPaddingException;
@@ -31,29 +34,20 @@ import org.kohsuke.args4j.Option;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.maxeltr.rstpldr.Service.CryptService;
+import ru.maxeltr.rstpldr.Service.ExitChecker;
 
 /**
  *
  * @author Maxim Eltratov <Maxim.Eltratov@yandex.ru>
  */
 @Configuration
-public class AppConfig {
+public class AppAnnotationConfig {
 
-    public static final String DEFAULT_ENCODING = "UTF-8";
     public static final String CONFIG_PATHNAME = "Configuration.xml";
-    public static final byte[] SALT = {1, 2, 3, 4, 5, 6, 7, 8};
-    public static final int ITERATION_COUNT = 4000;
-    public static final int KEY_LENGTH = 128;
-    public static final String URL = "http://176.113.82.112/v1/api/file";
-    public static final String URL_GET_TOKEN = "http://176.113.82.112/oauth";
 
-    @Option(name = "-pin", usage = "enter pin to decrypt options")
-    public static String pin = "";
-
-    public AppConfig() {
+    public AppAnnotationConfig() throws IOException {
         try {
-            LogManager.getLogManager().readConfiguration(
-                    AppConfig.class.getResourceAsStream("/logging.properties")
+            LogManager.getLogManager().readConfiguration(AppAnnotationConfig.class.getResourceAsStream("/logging.properties")
             );
         } catch (IOException | SecurityException ex) {
             System.err.println("Could not setup logger configuration: " + ex.toString());
@@ -66,14 +60,17 @@ public class AppConfig {
     }
 
     @Bean
-    public CryptService cryptService(char[] pin) throws NoSuchAlgorithmException, NoSuchPaddingException {
+    public CryptService cryptService() throws NoSuchAlgorithmException, NoSuchPaddingException {
         return new CryptService();
     }
 
     @Bean
-    public CmdLnParser cmdLnParser() {
-        return new CmdLnParser(this);
+    public CmdLnParser cmdLnParser(Config config, CryptService cryptService) {
+        return new CmdLnParser(config, cryptService);
     }
 
-
+    @Bean
+    public ExitChecker exitChecker(Config config, CryptService cryptService) throws IOException {
+        return new ExitChecker(config, cryptService);
+    }
 }

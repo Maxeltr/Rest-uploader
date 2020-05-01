@@ -1,5 +1,6 @@
 Configuration.xml
 RstClnt.log*
+exit*
 
 # Compiled class file
 *.class

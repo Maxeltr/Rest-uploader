@@ -23,8 +23,10 @@
  */
 package ru.maxeltr.rstpldr.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -40,14 +42,15 @@ import java.util.concurrent.Executors;
  */
 public class ExitChecker {
 
-    private final Path dir;
+    private Path dir;
     private final Executor executor;
     private final WatchService watcher;
 
     // Create the checker using the provided path but with some defaults for
     // executor and watch service
-    public ExitChecker(final Path dir) throws IOException {
-        this(dir, FileSystems.getDefault().newWatchService(), Executors.newFixedThreadPool(1));
+    public ExitChecker() throws IOException {
+        this.watcher = FileSystems.getDefault().newWatchService();
+        this.executor = Executors.newFixedThreadPool(1);
     }
 
     // Create the checker using the provided path, watcher and executor
@@ -85,5 +88,10 @@ public class ExitChecker {
                 // Ok, we got interrupted
             }
         }, executor).thenRunAsync(action);
+    }
+
+    public void setDir(String dir) {
+        this.dir = new File(dir).toPath();
+
     }
 }

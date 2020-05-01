@@ -36,7 +36,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import ru.maxeltr.rstpldr.Config.AppConfig;
+import ru.maxeltr.rstpldr.Config.Config;
 
 
 /**
@@ -77,7 +77,7 @@ public class CryptService {
         String encryptedValue;
         byte[] cryptoText, iv;
         try {
-            SecretKeySpec key = createSecretKey(secretKey, AppConfig.SALT, AppConfig.ITERATION_COUNT, AppConfig.KEY_LENGTH);
+            SecretKeySpec key = createSecretKey(secretKey, Config.SALT, Config.ITERATION_COUNT, Config.KEY_LENGTH);
             this.pbeCipher.init(Cipher.ENCRYPT_MODE, key);
             AlgorithmParameters parameters = this.pbeCipher.getParameters();
             IvParameterSpec ivParameterSpec = parameters.getParameterSpec(IvParameterSpec.class);
@@ -110,7 +110,7 @@ public class CryptService {
 
         String iv, cryptoText;
         try {
-            SecretKeySpec key = createSecretKey(secretKey, AppConfig.SALT, AppConfig.ITERATION_COUNT, AppConfig.KEY_LENGTH);
+            SecretKeySpec key = createSecretKey(secretKey, Config.SALT, Config.ITERATION_COUNT, Config.KEY_LENGTH);
             iv = value.split(":")[0];
             cryptoText = value.split(":")[1];
             this.pbeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(base64Decode(iv)));
@@ -122,11 +122,11 @@ public class CryptService {
         return decryptedValue;
     }
 
-    private void setPin(char[] pin) {
+    public void setPin(char[] pin) {
         this.pin = pin;
     }
 
-    private char[] getPin() {
+    public char[] getPin() {
         return this.pin;
     }
 

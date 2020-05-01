@@ -27,6 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import ru.maxeltr.rstpldr.Service.CryptService;
 
 /**
  *
@@ -36,18 +38,56 @@ public class CmdLnParser {
 
     private static final Logger logger = Logger.getLogger(CmdLineParser.class.getName());
 
+    @Option(name = "-pin", usage = "enter pin to decrypt options")
+    private String pin = "";
+
+    @Option(name = "-save", usage = "write options to configuration file")
+    private boolean shouldSave = false;
+
+    @Option(name = "-id", usage = "enter client ID")
+    private void setClientId(String value) {
+        this.config.setProperty("ClientId", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
+    @Option(name = "-secret", usage = "enter client secret")
+    private void setClientSecret(String value) {
+        this.config.setProperty("ClientSecret", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
+    @Option(name = "-dir", usage = "enter log directory")
+    private void setLogDir(String value) {
+        this.config.setProperty("LogDir", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
+    @Option(name = "-key", usage = "enter key to encrypt files (this is key2)")
+    public void setKey2(String value) {
+        this.config.setProperty("Key2", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
     CmdLineParser parser;
 
-    CmdLnParser(Object values) {
-        this.parser = new CmdLineParser(values);
+    Config config;
+
+    CryptService cryptService;
+
+    CmdLnParser(Config config, CryptService cryptService) {
+        this.parser = new CmdLineParser(this);
+        this.config = config;
+        this.cryptService = cryptService;
     }
 
     public void parse(String[] args) {
         try {
-            parser.parseArgument(args);
+            this.parser.parseArgument(args);
         } catch (CmdLineException ex) {
             logger.log(Level.SEVERE, "Cannot parse command line arguments", ex);
         }
+
+        if (this.shouldSave == true) {
+            this.config.saveConfigToFile();
+        }
+
+        cryptService.setPin(this.pin.toCharArray());
     }
 
 }
