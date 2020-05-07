@@ -74,12 +74,12 @@ public class ExitChecker {
                 WatchKey key = watcher.take();
                 while (key != null) {
                     for (WatchEvent<?> event : key.pollEvents()) {
-                        if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+//                        if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                             String filename = event.context().toString();
                             if (filename.startsWith("exit")) {
                                 return;
                             }
-                        }
+//                        }
                     }
                     key.reset();
                 }

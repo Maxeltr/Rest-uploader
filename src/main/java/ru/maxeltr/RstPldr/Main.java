@@ -33,42 +33,53 @@ public class Main {
         ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppAnnotationConfig.class);
         CmdLnParser parser = (CmdLnParser) applicationContext.getBean("cmdLnParser");
         parser.parse(args);
+        parser = null;
 
         CryptService cryptService = (CryptService) applicationContext.getBean("cryptService");
 
         Config config = (Config) applicationContext.getBean("config");
-        System.out.println(new String(cryptService.decrypt(config.getProperty("LogDir", ""))));
+        String logDir = new String(cryptService.decrypt(config.getProperty("LogDir", "")));
+        if (logDir.isEmpty()) {
+            logDir = System.getProperty("user.home");
+        }
+
+        System.out.println("LogDir " + logDir);
+        System.out.println("Key2 " + new String(cryptService.decrypt(config.getProperty("Key2", ""))));
+        System.out.println("ClientId " + new String(cryptService.decrypt(config.getProperty("ClientId", ""))));
+        System.out.println("ClientSecret " + new String(cryptService.decrypt(config.getProperty("ClientSecret", ""))));
 
 //        new String(cryptService.decrypt(config.getProperty("LogDir", System.getProperty("user.home"))))
 
-//        SendFilesTask task = new SendFilesTask();
-//        Timer timer = new Timer();
-//        timer.schedule(task, 1000, 2000);
+        SendFilesTask task = new SendFilesTask(logDir);
+        Timer timer = new Timer();
+        timer.schedule(task, 1000, 2000);
 
 
 
         // Setup dirs in the home folder
 //        final Path directory = Files.createDirectories(
 //                new File(System.getProperty("user.dir")).toPath());
-//
-//        // In this case we use an AtomicBoolean to hold the "exit-status"
-//        AtomicBoolean shouldExit = new AtomicBoolean(false);
-//
-//        // Start the exit checker, provide a Runnable that will be executed
-//        // when it is time to exit the program
-//        ExitChecker exitChecker = (ExitChecker) applicationContext.getBean("exitChecker");
-//        exitChecker.runWhenItIsTimeToExit(() -> {
-//            // This is where your exit code will end up. In this case we
-//            // simply change the value of the AtomicBoolean
-//            shouldExit.set(true);
-//        });
-//
-//        // Start processing
-//        while (!shouldExit.get()) {
-//            System.out.println("Do something in loop");
-//            Thread.sleep(1000);
-//        }
 
+        // In this case we use an AtomicBoolean to hold the "exit-status"
+        AtomicBoolean shouldExit = new AtomicBoolean(false);
+
+        // Start the exit checker, provide a Runnable that will be executed
+        // when it is time to exit the program
+        ExitChecker exitChecker = (ExitChecker) applicationContext.getBean("exitChecker");
+        exitChecker.setDir(logDir);
+        exitChecker.runWhenItIsTimeToExit(() -> {
+            // This is where your exit code will end up. In this case we
+            // simply change the value of the AtomicBoolean
+            shouldExit.set(true);
+        });
+
+        // Start processing
+        while (!shouldExit.get()) {
+            System.out.println("Do something in loop");
+            Thread.sleep(10000);
+        }
+
+        timer.cancel();
         System.out.println("Exiting"); //terminate processes lglst?
         System.exit(0);
 //        try {

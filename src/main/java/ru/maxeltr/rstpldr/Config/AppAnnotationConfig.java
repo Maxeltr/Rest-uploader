@@ -70,7 +70,7 @@ public class AppAnnotationConfig {
     }
 
     @Bean
-    public ExitChecker exitChecker(Config config, CryptService cryptService) throws IOException {
-        return new ExitChecker(config, cryptService);
+    public ExitChecker exitChecker() throws IOException {
+        return new ExitChecker();
     }
 }

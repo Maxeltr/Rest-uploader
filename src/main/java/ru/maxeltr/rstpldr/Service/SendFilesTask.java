@@ -23,14 +23,47 @@
  */
 package ru.maxeltr.rstpldr.Service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import ru.maxeltr.rstpldr.Main;
 
 /**
  *
  * @author Maxim Eltratov <Maxim.Eltratov@yandex.ru>
  */
 public class SendFilesTask extends TimerTask {
+
+    private File logDir;
+
+    private static final Logger logger = Logger.getLogger(SendFilesTask.class.getName());
+
+    public SendFilesTask(String dir) {
+        this.logDir = new File(dir);
+    }
+
     public void run() {
         System.out.println("timer");
+        this.listFiles();
+    }
+
+    private void listFiles() {
+        File[] files = this.logDir.listFiles((File dir, String name1) -> name1.toLowerCase().endsWith(".log") || name1.toLowerCase().endsWith(".jpg"));
+        if (files != null) {
+
+            String fileName;
+            for (File file : files) {
+                fileName = file.getName();
+                if (file.canRead()) {
+                    System.out.println("fileName can read: " + fileName);
+                } else {
+                    System.out.println("fileName can not read: " + fileName);
+                }
+
+
+            }
+        }
     }
 }
