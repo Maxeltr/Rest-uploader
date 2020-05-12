@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import ru.maxeltr.rstpldr.Config.Config;
 import ru.maxeltr.rstpldr.Service.CryptService;
 import ru.maxeltr.rstpldr.Service.ExitChecker;
+import ru.maxeltr.rstpldr.Service.RestUploadService;
 import ru.maxeltr.rstpldr.Service.SendFilesTask;
 
 public class Main {
@@ -50,7 +51,8 @@ public class Main {
 
 //        new String(cryptService.decrypt(config.getProperty("LogDir", System.getProperty("user.home"))))
 
-        SendFilesTask task = new SendFilesTask(logDir);
+        RestUploadService restUploadService = (RestUploadService) applicationContext.getBean("restUploadService");
+        SendFilesTask task = new SendFilesTask(logDir, restUploadService);
         Timer timer = new Timer();
         timer.schedule(task, 1000, 2000);
 

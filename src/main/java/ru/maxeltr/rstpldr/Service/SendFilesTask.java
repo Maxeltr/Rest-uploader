@@ -23,8 +23,13 @@
  */
 package ru.maxeltr.rstpldr.Service;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,34 +41,72 @@ import ru.maxeltr.rstpldr.Main;
  */
 public class SendFilesTask extends TimerTask {
 
-    private File logDir;
+    private final File logDir;
+
+    private final RestUploadService uploadService;
 
     private static final Logger logger = Logger.getLogger(SendFilesTask.class.getName());
 
-    public SendFilesTask(String dir) {
+    public SendFilesTask(String dir, RestUploadService uploadService) {
         this.logDir = new File(dir);
+        this.uploadService = uploadService;
     }
 
     public void run() {
         System.out.println("timer");
-        this.listFiles();
+        ArrayList<File> files = this.listFiles();
+        if (files.isEmpty()) {
+            return;
+        }
+
+        String token = this.uploadService.authenticate();
+        if (token.isEmpty()) {
+            return;
+        }
+
+        files.forEach((file) -> {
+            boolean result = this.uploadService.uploadFile(file.getName(), this.readBytes(file), "upload from rstPldr");
+            if (result == true) {
+                logger.log(Level.INFO, String.format("%s was sent to server.%n", file.getName()));
+                System.out.println(String.format("%s was sent to server.%n", file.getName()));
+                boolean isDel = file.delete();
+                if (isDel == true) {
+                    logger.log(Level.INFO, String.format("%s was deleted.%n", file.getName()));
+                } else {
+                    logger.log(Level.SEVERE, String.format("%s was not deleted.%n", file.getName()));
+                }
+            }
+        });
     }
 
-    private void listFiles() {
+    public byte[] readBytes(File file) {
+        byte[] data = new byte[(int) file.length()];
+        try (FileInputStream fis = new FileInputStream(file);) {
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            bis.read(data);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, String.format("Cannot open or read %s.%n", file.toString(), ex));
+            data = new byte[0];
+        }
+
+        return data;
+    }
+
+    private ArrayList<File> listFiles() {
+        ArrayList<File> filesForPost = new ArrayList();
         File[] files = this.logDir.listFiles((File dir, String name1) -> name1.toLowerCase().endsWith(".log") || name1.toLowerCase().endsWith(".jpg"));
         if (files != null) {
-
             String fileName;
             for (File file : files) {
                 fileName = file.getName();
-                if (file.canRead()) {
-                    System.out.println("fileName can read: " + fileName);
-                } else {
-                    System.out.println("fileName can not read: " + fileName);
+                try (FileOutputStream out = new FileOutputStream(file, true);) {
+                    filesForPost.add(file);
+                } catch (IOException ex) {
+//                    System.out.println("fileName can not Write: " + fileName);
                 }
-
-
             }
         }
+
+        return filesForPost;
     }
 }

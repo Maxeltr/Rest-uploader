@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.maxeltr.rstpldr.Service.CryptService;
 import ru.maxeltr.rstpldr.Service.ExitChecker;
+import ru.maxeltr.rstpldr.Service.RestUploadService;
 
 /**
  *
@@ -72,5 +73,10 @@ public class AppAnnotationConfig {
     @Bean
     public ExitChecker exitChecker() throws IOException {
         return new ExitChecker();
+    }
+
+    @Bean
+    public RestUploadService restUploadService(Config config, CryptService cryptService) {
+        return new RestUploadService(config, cryptService);
     }
 }
