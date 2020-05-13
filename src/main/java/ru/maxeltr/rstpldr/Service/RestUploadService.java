@@ -103,7 +103,7 @@ public class RestUploadService {
                     String.class
             );
         } catch (RestClientResponseException ex) {
-            this.logger.log(Level.SEVERE, String.format("Cannot upload file: %s.%n", filename), ex);
+            logger.log(Level.SEVERE, String.format("Cannot upload file: %s.%n", filename), ex);
 
             return false;
         }

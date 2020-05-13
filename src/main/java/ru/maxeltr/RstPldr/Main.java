@@ -37,11 +37,11 @@ public class Main {
         parser = null;
 
         CryptService cryptService = (CryptService) applicationContext.getBean("cryptService");
-
         Config config = (Config) applicationContext.getBean("config");
         String logDir = new String(cryptService.decrypt(config.getProperty("LogDir", "")));
         if (logDir.isEmpty()) {
-            logDir = System.getProperty("user.home");
+            logger.log(Level.SEVERE, String.format("Cannot get property LogDir from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
+//            System.exit(1);
         }
 
         System.out.println("LogDir " + logDir);
@@ -51,10 +51,14 @@ public class Main {
 
 //        new String(cryptService.decrypt(config.getProperty("LogDir", System.getProperty("user.home"))))
 
-        RestUploadService restUploadService = (RestUploadService) applicationContext.getBean("restUploadService");
-        SendFilesTask task = new SendFilesTask(logDir, restUploadService);
+//        RestUploadService restUploadService = (RestUploadService) applicationContext.getBean("restUploadService");
+        SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
+        task.setLogDir(logDir);
+
+        String interval = config.getProperty("SendInterval", "");
+        System.out.println("SendInterval " + interval);
         Timer timer = new Timer();
-        timer.schedule(task, 1000, 2000);
+        timer.schedule(task, 1000, new Long(interval));
 
 
 
@@ -77,25 +81,13 @@ public class Main {
 
         // Start processing
         while (!shouldExit.get()) {
-            System.out.println("Do something in loop");
+            System.out.println("Do something in loop");     //check process lglst?
             Thread.sleep(10000);
         }
 
         timer.cancel();
         System.out.println("Exiting"); //terminate processes lglst?
         System.exit(0);
-//        try {
-//
-//            logger.log(Level.SEVERE, String.format("Canijnta.%n"));
-//            logger.info(AppConfig.pin);
-//
-//            Thread.sleep(15000);
-//
-//            logger.info("stop");
-//            timer.cancel();
-//        } catch (InterruptedException ex) {
-//
-//        }
 
     }
 

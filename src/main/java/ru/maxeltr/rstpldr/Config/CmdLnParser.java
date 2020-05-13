@@ -59,7 +59,7 @@ public class CmdLnParser {
         this.config.setProperty("LogDir", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
     }
 
-    @Option(name = "-key", usage = "enter key to encrypt files (this is key2)")
+    @Option(name = "-key2", usage = "enter key to encrypt files (this is key2)")
     public void setKey2(String value) {
         this.config.setProperty("Key2", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
     }
@@ -87,7 +87,7 @@ public class CmdLnParser {
             this.config.saveConfigToFile();
         }
 
-        cryptService.setPin(this.pin.toCharArray());
+        this.cryptService.setPin(this.pin.toCharArray());
     }
 
 }

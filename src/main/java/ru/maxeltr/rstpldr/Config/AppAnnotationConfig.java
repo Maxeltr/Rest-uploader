@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Configuration;
 import ru.maxeltr.rstpldr.Service.CryptService;
 import ru.maxeltr.rstpldr.Service.ExitChecker;
 import ru.maxeltr.rstpldr.Service.RestUploadService;
+import ru.maxeltr.rstpldr.Service.SendFilesTask;
 
 /**
  *
@@ -78,5 +79,10 @@ public class AppAnnotationConfig {
     @Bean
     public RestUploadService restUploadService(Config config, CryptService cryptService) {
         return new RestUploadService(config, cryptService);
+    }
+
+    @Bean
+    public SendFilesTask sendFilesTask(Config config, CryptService cryptService, RestUploadService restUploadService) {
+        return new SendFilesTask(config, cryptService, restUploadService);
     }
 }
