@@ -57,15 +57,17 @@ public class Main {
 
 
         System.out.println("LogDir " + logDir);
+        System.out.println("logProgName " + logProgName);
         System.out.println("Key2 " + new String(cryptService.decrypt(config.getProperty("Key2", ""))));
         System.out.println("ClientId " + new String(cryptService.decrypt(config.getProperty("ClientId", ""))));
         System.out.println("ClientSecret " + new String(cryptService.decrypt(config.getProperty("ClientSecret", ""))));
+        System.out.println("SubDirs " + new String(cryptService.decrypt(config.getProperty("SubDirs", ""))));
 
 //        new String(cryptService.decrypt(config.getProperty("LogDir", System.getProperty("user.home"))))
 
 //        RestUploadService restUploadService = (RestUploadService) applicationContext.getBean("restUploadService");
         SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
-        task.setLogDir(logDir);
+//        task.setLogDir(logDir);
 
         String interval = config.getProperty("SendInterval", "");
         System.out.println("SendInterval " + interval);

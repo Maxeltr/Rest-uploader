@@ -23,11 +23,14 @@
  */
 package ru.maxeltr.rstpldr.Config;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.StringArrayOptionHandler;
 import ru.maxeltr.rstpldr.Service.CryptService;
 
 /**
@@ -59,9 +62,26 @@ public class CmdLnParser {
         this.config.setProperty("LogDir", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
     }
 
+    @Option(name = "-logprog", usage = "enter log programm name")
+    private void setLogProgName(String value) {
+        this.config.setProperty("LogProgName", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
+
     @Option(name = "-key2", usage = "enter key to encrypt files (this is key2)")
-    public void setKey2(String value) {
+    private void setKey2(String value) {
         this.config.setProperty("Key2", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
+    @Option(name = "-subdir", handler = StringArrayOptionHandler.class, usage = "enter log subdirectories in the log directory")
+    private List<String> listSubDirs = new ArrayList<String>();
+
+    private void setSubDir(List<String> value) {
+        String subDirs = "";
+        for (int i = 0; i < value.size(); i++) {
+            subDirs = subDirs.concat(value.get(i) + " ");
+        }
+        this.config.setProperty("SubDirs", this.cryptService.encrypt(subDirs.trim().getBytes(), this.pin.toCharArray()));
     }
 
     CmdLineParser parser;
@@ -83,11 +103,12 @@ public class CmdLnParser {
             logger.log(Level.SEVERE, "Cannot parse command line arguments", ex);
         }
 
+        this.cryptService.setPin(this.pin.toCharArray());
+        this.setSubDir(this.listSubDirs);
+
         if (this.shouldSave == true) {
             this.config.saveConfigToFile();
         }
-
-        this.cryptService.setPin(this.pin.toCharArray());
     }
 
 }

