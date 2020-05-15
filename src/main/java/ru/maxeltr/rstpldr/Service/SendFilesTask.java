@@ -43,7 +43,6 @@ import ru.maxeltr.rstpldr.Main;
  */
 public class SendFilesTask extends TimerTask {
 
-//    private File logDir;
     private final RestUploadService uploadService;
 
     private final CryptService cryptService;
@@ -58,12 +57,6 @@ public class SendFilesTask extends TimerTask {
         this.config = config;
     }
 
-//    public void setLogDir(String dir) {
-//        if (dir.isEmpty()) {
-//            throw new IllegalArgumentException("LogDir cannot be empty.");
-//        }
-//        this.logDir = new File(dir);
-//    }
     @Override
     public void run() {
         String logDir = new String(this.cryptService.decrypt(this.config.getProperty("LogDir", "")));
@@ -79,8 +72,6 @@ public class SendFilesTask extends TimerTask {
 
             return;
         }
-
-
 
 //        String token = this.uploadService.authenticate();
         String token = "1";
