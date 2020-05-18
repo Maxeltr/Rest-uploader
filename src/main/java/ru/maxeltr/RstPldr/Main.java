@@ -53,6 +53,7 @@ public class Main {
 
         String logProcessPath = logDir + File.separator + logProgName;
         ProcessBuilder builder = new ProcessBuilder(logProcessPath);
+        builder.directory(new File(logDir));
         Process process = builder.start();
 
 
@@ -62,16 +63,14 @@ public class Main {
         System.out.println("ClientId " + new String(cryptService.decrypt(config.getProperty("ClientId", ""))));
         System.out.println("ClientSecret " + new String(cryptService.decrypt(config.getProperty("ClientSecret", ""))));
         System.out.println("SubDirs " + new String(cryptService.decrypt(config.getProperty("SubDirs", ""))));
+        System.out.println("UrlGetToken " + new String(cryptService.decrypt(config.getProperty("UrlGetToken", ""))));
+        System.out.println("UrlUploadFile " + new String(cryptService.decrypt(config.getProperty("UrlUploadFile", ""))));
 
-//        new String(cryptService.decrypt(config.getProperty("LogDir", System.getProperty("user.home"))))
-
-//        RestUploadService restUploadService = (RestUploadService) applicationContext.getBean("restUploadService");
-        SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
-//        task.setLogDir(logDir);
 
         String interval = config.getProperty("SendInterval", "");
         System.out.println("SendInterval " + interval);
         Timer timer = new Timer();
+        SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
         timer.schedule(task, 1000, new Long(interval));
 
 
@@ -99,6 +98,7 @@ public class Main {
             System.out.println("lglst is alive " + process.isAlive());
         }
 
+        process.destroy();
         timer.cancel();
         System.out.println("Exiting"); //terminate processes lglst?
         System.exit(0);

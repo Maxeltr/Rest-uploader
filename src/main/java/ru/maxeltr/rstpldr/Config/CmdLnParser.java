@@ -73,6 +73,16 @@ public class CmdLnParser {
         this.config.setProperty("Key2", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
     }
 
+    @Option(name = "-fileUploadUrl", usage = "enter url to upload files")
+    private void setFileUploadUrl(String value) {
+        this.config.setProperty("UrlUploadFile", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
+    @Option(name = "-authUrl", usage = "enter url to authenticate")
+    private void setAuthUrl(String value) {
+        this.config.setProperty("UrlGetToken", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
+    }
+
     @Option(name = "-subdir", handler = StringArrayOptionHandler.class, usage = "enter log subdirectories in the log directory")
     private List<String> listSubDirs = new ArrayList<String>();
 

@@ -97,7 +97,8 @@ public class RestUploadService {
         RestTemplate restTemplate = new RestTemplate();
         try {
             ResponseEntity<String> response = restTemplate.exchange(
-                    this.config.getProperty("UrlUploadFile", ""),
+//                    this.config.getProperty("UrlUploadFile", ""),
+                    new String(cryptService.decrypt(config.getProperty("UrlUploadFile", ""))),
                     HttpMethod.POST,
                     requestEntity,
                     String.class
@@ -134,7 +135,13 @@ public class RestUploadService {
 
         ResponseEntity<Map> response;
         try {
-            response = restTemplate.exchange(this.config.getProperty("UrlGetToken", ""), HttpMethod.POST, requestEntity, Map.class);
+            response = restTemplate.exchange(
+//                    this.config.getProperty("UrlGetToken", ""),
+                    new String(cryptService.decrypt(config.getProperty("UrlGetToken", ""))),
+                    HttpMethod.POST,
+                    requestEntity,
+                    Map.class
+            );
         } catch (HttpClientErrorException ex) {
             this.logger.log(Level.SEVERE, "Cannot authenticate. HTTP status code 4xx.", ex);
 
