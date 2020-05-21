@@ -73,8 +73,7 @@ public class SendFilesTask extends TimerTask {
             return;
         }
 
-//        String token = this.uploadService.authenticate();
-        String token = "1";
+        String token = this.uploadService.authenticate();
         if (token.isEmpty()) {
             logger.log(Level.INFO, String.format("Cannot authenticate.%n"));
 
@@ -82,7 +81,7 @@ public class SendFilesTask extends TimerTask {
         }
 
         ArrayList<File> postedFiles = this.sendFiles(files);
-//        this.deleteFiles(postedFiles);
+        this.deleteFiles(postedFiles);
     }
 
     private void deleteFiles(ArrayList<File> files) {
@@ -107,8 +106,13 @@ public class SendFilesTask extends TimerTask {
                 return;
             }
 
-//            boolean result = this.uploadService.uploadFile(file.getName(), encryptData, "upload from rstPldr");
-            boolean result = true;
+//            try (FileWriter out = new FileWriter(file);) {    //add del
+//                out.write(encryptData);
+//            } catch (IOException ex) {
+//                logger.log(Level.INFO, String.format("There is no access to %s.%n", file.getName()));
+//            }
+
+            boolean result = this.uploadService.uploadFile(file.getName(), encryptData.getBytes(), "upload from rstPldr");
             if (result == true) {
                 logger.log(Level.INFO, String.format("%s was sent to server.%n", file.getName()));
                 System.out.println(String.format("%s was sent to server.%n", file.getName()));

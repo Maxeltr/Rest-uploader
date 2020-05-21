@@ -47,6 +47,11 @@ public class CmdLnParser {
     @Option(name = "-save", usage = "write options to configuration file")
     private boolean shouldSave = false;
 
+    @Option(name = "-show", usage = "show options")
+    private void setShowOptions(boolean value) {
+        this.config.SHOW_OPTIONS = value;
+    }
+
     @Option(name = "-id", usage = "enter client ID")
     private void setClientId(String value) {
         this.config.setProperty("ClientId", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));

@@ -29,7 +29,7 @@ public class Main {
      * @throws java.io.IOException
      * @throws java.lang.InterruptedException
      */
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws InterruptedException {
         ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppAnnotationConfig.class);
         CmdLnParser parser = (CmdLnParser) applicationContext.getBean("cmdLnParser");
         parser.parse(args);
@@ -48,37 +48,41 @@ public class Main {
         if (logProgName.isEmpty()) {
             logger.log(Level.SEVERE, String.format("Cannot get property LogProgName from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
             System.out.println(String.format("Cannot get property LogProgName from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
-            System.exit(1);
+            System.exit(2);
         }
 
         String logProcessPath = logDir + File.separator + logProgName;
         ProcessBuilder builder = new ProcessBuilder(logProcessPath);
         builder.directory(new File(logDir));
-        Process process = builder.start();
+        Process process = null;
+        try {
+            process = builder.start();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, String.format("Cannot start %s. Exit.%n", logProgName), ex);
+            System.out.println(String.format("Cannot start %s. Exit.%n", logProgName));
+            System.exit(3);
+        }
 
-
-        System.out.println("LogDir " + logDir);
-        System.out.println("logProgName " + logProgName);
-        System.out.println("Key2 " + new String(cryptService.decrypt(config.getProperty("Key2", ""))));
-        System.out.println("ClientId " + new String(cryptService.decrypt(config.getProperty("ClientId", ""))));
-        System.out.println("ClientSecret " + new String(cryptService.decrypt(config.getProperty("ClientSecret", ""))));
-        System.out.println("SubDirs " + new String(cryptService.decrypt(config.getProperty("SubDirs", ""))));
-        System.out.println("UrlGetToken " + new String(cryptService.decrypt(config.getProperty("UrlGetToken", ""))));
-        System.out.println("UrlUploadFile " + new String(cryptService.decrypt(config.getProperty("UrlUploadFile", ""))));
-
-
-        String interval = config.getProperty("SendInterval", "");
-        System.out.println("SendInterval " + interval);
         Timer timer = new Timer();
         SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
+        String interval = config.getProperty("SendInterval", "");
         timer.schedule(task, 1000, new Long(interval));
 
-
+        if (Config.SHOW_OPTIONS == true) {
+            System.out.println("LogDir " + logDir);
+            System.out.println("logProgName " + logProgName);
+            System.out.println("Key2 " + new String(cryptService.decrypt(config.getProperty("Key2", ""))));
+            System.out.println("ClientId " + new String(cryptService.decrypt(config.getProperty("ClientId", ""))));
+            System.out.println("ClientSecret " + new String(cryptService.decrypt(config.getProperty("ClientSecret", ""))));
+            System.out.println("SubDirs " + new String(cryptService.decrypt(config.getProperty("SubDirs", ""))));
+            System.out.println("UrlGetToken " + new String(cryptService.decrypt(config.getProperty("UrlGetToken", ""))));
+            System.out.println("UrlUploadFile " + new String(cryptService.decrypt(config.getProperty("UrlUploadFile", ""))));
+            System.out.println("SendInterval " + interval);
+        }
 
         // Setup dirs in the home folder
 //        final Path directory = Files.createDirectories(
 //                new File(System.getProperty("user.dir")).toPath());
-
         // In this case we use an AtomicBoolean to hold the "exit-status"
         AtomicBoolean shouldExit = new AtomicBoolean(false);
 
@@ -86,21 +90,35 @@ public class Main {
         // when it is time to exit the program
         ExitChecker exitChecker = (ExitChecker) applicationContext.getBean("exitChecker");
         exitChecker.setDir(logDir);
-        exitChecker.runWhenItIsTimeToExit(() -> {
-            // This is where your exit code will end up. In this case we
-            // simply change the value of the AtomicBoolean
-            shouldExit.set(true);
-        });
+        try {
+            exitChecker.runWhenItIsTimeToExit(() -> {
+                // This is where your exit code will end up. In this case we
+                // simply change the value of the AtomicBoolean
+                shouldExit.set(true);
+            });
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Cannot run ExitChecker.", ex);
+            System.out.println("Cannot run ExitChecker.");
+            System.exit(4);
+        }
 
         // Start processing
         while (!shouldExit.get()) {
             Thread.sleep(10000);
-            System.out.println("lglst is alive " + process.isAlive());
+            if (!process.isAlive()) {
+                logger.log(Level.SEVERE, String.format("Process %s was terminated by unknown. Exit value %s.%n", logProcessPath, process.exitValue()));
+                try {
+                    process = builder.start();
+                } catch (IOException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, String.format("Cannot restart %s.%n", logProgName), ex);
+                    System.out.println(String.format("Cannot restart %s.%n", logProgName));
+                }
+            }
         }
 
         process.destroy();
         timer.cancel();
-        System.out.println("Exiting"); //terminate processes lglst?
+        System.out.println("Exiting");
         System.exit(0);
 
     }

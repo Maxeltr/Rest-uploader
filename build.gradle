@@ -37,3 +37,10 @@ jar {
     }
 }
 
+//task incrementVersion << {
+//    String minor = version.substring(version.lastIndexOf('.') + 1)
+//    int m = minor.toInteger()+1
+//    String major = version.substring(0, version.length() - 1)
+//    String s = buildFile.getText().replaceFirst("version = '$version'", "version='" + major + m + "'")
+//    buildFile.setText(s)
+//}

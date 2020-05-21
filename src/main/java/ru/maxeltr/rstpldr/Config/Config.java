@@ -44,6 +44,8 @@ public class Config {
     public static final int ITERATION_COUNT = 4000;
     public static final int KEY_LENGTH = 128;
 
+    public static boolean SHOW_OPTIONS = false;
+
     private static final Logger logger = Logger.getLogger(Config.class.getName());
 
     private final Properties properties = new Properties();
