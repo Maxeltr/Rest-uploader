@@ -72,7 +72,6 @@ public class CmdLnParser {
         this.config.setProperty("LogProgName", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
     }
 
-
     @Option(name = "-key2", usage = "enter key to encrypt files (this is key2)")
     private void setKey2(String value) {
         this.config.setProperty("Key2", this.cryptService.encrypt(value.getBytes(), this.pin.toCharArray()));
@@ -96,7 +95,7 @@ public class CmdLnParser {
         for (int i = 0; i < value.size(); i++) {
             subDirs = subDirs.concat(value.get(i) + " ");
         }
-        this.config.setProperty("SubDirs", this.cryptService.encrypt(subDirs.trim().getBytes(), this.pin.toCharArray()));
+        this.config.setProperty("SubDirs", this.cryptService.encrypt(subDirs.getBytes(), this.pin.toCharArray()));
     }
 
     CmdLineParser parser;
@@ -119,7 +118,10 @@ public class CmdLnParser {
         }
 
         this.cryptService.setPin(this.pin.toCharArray());
-        this.setSubDir(this.listSubDirs);
+        
+        if (this.listSubDirs.size() > 0) {
+            this.setSubDir(this.listSubDirs);
+        }
 
         if (this.shouldSave == true) {
             this.config.saveConfigToFile();
