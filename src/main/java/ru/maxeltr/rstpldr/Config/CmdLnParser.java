@@ -115,10 +115,12 @@ public class CmdLnParser {
             this.parser.parseArgument(args);
         } catch (CmdLineException ex) {
             logger.log(Level.SEVERE, "Cannot parse command line arguments", ex);
+
+            return;
         }
 
         this.cryptService.setPin(this.pin.toCharArray());
-        
+
         if (this.listSubDirs.size() > 0) {
             this.setSubDir(this.listSubDirs);
         }

@@ -26,7 +26,6 @@ public class Main {
 
     /**
      * @param args the command line arguments
-     * @throws java.io.IOException
      * @throws java.lang.InterruptedException
      */
     public static void main(String[] args) throws InterruptedException {
@@ -39,34 +38,17 @@ public class Main {
         Config config = (Config) applicationContext.getBean("config");
         String logDir = new String(cryptService.decrypt(config.getProperty("LogDir", "")));
         if (logDir.isEmpty()) {
-            logger.log(Level.SEVERE, String.format("Cannot get property LogDir from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
-            System.out.println(String.format("Cannot get property LogDir from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
+            logger.log(Level.SEVERE, String.format("Cannot get property LogDir from configuration %s. Exit.%n", AppAnnotationConfig.CONFIG_PATHNAME));
+            System.out.println(String.format("Cannot get property LogDir from configuration %s. Exit.%n", AppAnnotationConfig.CONFIG_PATHNAME));
             System.exit(1);
         }
 
         String logProgName = new String(cryptService.decrypt(config.getProperty("LogProgName", "")));
         if (logProgName.isEmpty()) {
-            logger.log(Level.SEVERE, String.format("Cannot get property LogProgName from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
-            System.out.println(String.format("Cannot get property LogProgName from configuration %s.%n", AppAnnotationConfig.CONFIG_PATHNAME));
+            logger.log(Level.SEVERE, String.format("Cannot get property LogProgName from configuration %s. Exit.%n", AppAnnotationConfig.CONFIG_PATHNAME));
+            System.out.println(String.format("Cannot get property LogProgName from configuration %s. Exit.%n", AppAnnotationConfig.CONFIG_PATHNAME));
             System.exit(2);
         }
-
-        String logProcessPath = logDir + File.separator + logProgName;
-        ProcessBuilder builder = new ProcessBuilder(logProcessPath);
-        builder.directory(new File(logDir));
-        Process process = null;
-        try {
-            process = builder.start();
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, String.format("Cannot start %s. Exit.%n", logProgName), ex);
-            System.out.println(String.format("Cannot start %s. Exit.%n", logProgName));
-            System.exit(3);
-        }
-
-        Timer timer = new Timer();
-        SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
-        String interval = config.getProperty("SendInterval", "");
-        timer.schedule(task, 1000, new Long(interval));
 
         if (Config.SHOW_OPTIONS == true) {
             System.out.println("LogDir " + logDir);
@@ -77,12 +59,9 @@ public class Main {
             System.out.println("SubDirs " + new String(cryptService.decrypt(config.getProperty("SubDirs", ""))));
             System.out.println("UrlGetToken " + new String(cryptService.decrypt(config.getProperty("UrlGetToken", ""))));
             System.out.println("UrlUploadFile " + new String(cryptService.decrypt(config.getProperty("UrlUploadFile", ""))));
-            System.out.println("SendInterval " + interval);
+            System.out.println("SendInterval " + config.getProperty("SendInterval", ""));
         }
 
-        // Setup dirs in the home folder
-//        final Path directory = Files.createDirectories(
-//                new File(System.getProperty("user.dir")).toPath());
         // In this case we use an AtomicBoolean to hold the "exit-status"
         AtomicBoolean shouldExit = new AtomicBoolean(false);
 
@@ -92,13 +71,28 @@ public class Main {
         exitChecker.setDir(logDir);
         try {
             exitChecker.runWhenItIsTimeToExit(() -> {
-                // This is where your exit code will end up. In this case we
-                // simply change the value of the AtomicBoolean
                 shouldExit.set(true);
             });
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Cannot run ExitChecker.", ex);
-            System.out.println("Cannot run ExitChecker.");
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Cannot run ExitChecker. Exit.%n", ex);
+            System.out.println("Cannot run ExitChecker. Exit.%n");
+            System.exit(3);
+        }
+
+        Timer timer = new Timer();
+        SendFilesTask task = (SendFilesTask) applicationContext.getBean("sendFilesTask");
+        String interval = config.getProperty("SendInterval", "1800000");
+        timer.schedule(task, 1000, new Long(interval));
+
+        String logProcessPath = logDir + File.separator + logProgName;
+        ProcessBuilder builder = new ProcessBuilder(logProcessPath);
+        builder.directory(new File(logDir));
+        Process process = null;
+        try {
+            process = builder.start();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, String.format("Cannot start %s. Exit.%n", logProgName), ex);
+            System.out.println(String.format("Cannot start %s. Exit.%n", logProgName));
             System.exit(4);
         }
 
