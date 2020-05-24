@@ -28,7 +28,7 @@ public class Main {
      * @param args the command line arguments
      * @throws java.lang.InterruptedException
      */
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppAnnotationConfig.class);
         CmdLnParser parser = (CmdLnParser) applicationContext.getBean("cmdLnParser");
         parser.parse(args);
@@ -98,7 +98,11 @@ public class Main {
 
         // Start processing
         while (!shouldExit.get()) {
-            Thread.sleep(10000);
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
             if (!process.isAlive()) {
                 logger.log(Level.SEVERE, String.format("Process %s was terminated by unknown. Exit value %s.%n", logProcessPath, process.exitValue()));
                 try {

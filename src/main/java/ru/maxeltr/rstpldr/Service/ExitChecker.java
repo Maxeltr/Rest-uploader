@@ -82,6 +82,7 @@ public class ExitChecker {
 //                        }
                     }
                     key.reset();
+                    Thread.sleep(100);
                 }
 
             } catch (InterruptedException e) {
