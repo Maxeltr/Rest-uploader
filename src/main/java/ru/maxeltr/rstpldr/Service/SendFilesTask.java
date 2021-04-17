@@ -60,7 +60,7 @@ public class SendFilesTask extends TimerTask {
     @Override
     public void run() {
         String logDir = new String(this.cryptService.decrypt(this.config.getProperty("LogDir", "")));
-        ArrayList<File> files = this.listFiles(new File(logDir));
+        ArrayList<File> files = new ArrayList();
 
         String[] subDirs = new String(cryptService.decrypt(config.getProperty("SubDirs", ""))).split(" ");
         for (String subDir : subDirs) {
